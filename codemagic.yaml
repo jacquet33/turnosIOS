@@ -1,0 +1,67 @@
+workflows:
+  ios-debug:
+    name: iOS Debug Build
+    max_build_duration: 30
+    instance_type: mac_mini_m2
+    environment:
+      xcode: 15.4
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+    scripts:
+      - name: Build for Simulator
+        script: |
+          xcodebuild build \
+            -project TurnReserved.xcodeproj \
+            -scheme TurnReserved \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.5' \
+            COMPILER_INDEX_STORE_ENABLE=NO | xcpretty
+
+  ios-release:
+    name: iOS Release
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      xcode: 15.4
+      groups:
+        - ios_credentials
+      vars:
+        BUNDLE_ID: "com.turnreserved.app"
+        XCODE_SCHEME: "TurnReserved"
+        XCODE_PROJECT: "TurnReserved.xcodeproj"
+    scripts:
+      - name: Set up keychain
+        script: keychain initialize
+      - name: Fetch signing files
+        script: |
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+      - name: Set up signing
+        script: keychain add-certificates
+      - name: Set up provisioning profiles
+        script: xcode-project use-profiles
+      - name: Increment build number
+        script: |
+          LATEST_BUILD=$(app-store-connect get-latest-testflight-build-number "$BUNDLE_ID" || echo 0)
+          agvtool new-version -all $((LATEST_BUILD + 1))
+      - name: Build IPA
+        script: |
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - Internal Testers
