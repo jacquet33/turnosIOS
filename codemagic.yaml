@@ -11,6 +11,8 @@ workflows:
       branch_patterns:
         - pattern: main
           include: true
+        - pattern: feature/*
+          include: true
     scripts:
       - name: Build for Simulator
         script: |

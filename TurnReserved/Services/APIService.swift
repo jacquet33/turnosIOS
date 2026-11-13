@@ -21,13 +21,17 @@ actor APIService {
         return e
     }()
 
+    /// Encoder sin conversión de claves: los endpoints nuevos (/profile) reciben camelCase
+    private let plainEncoder = JSONEncoder()
+
     // MARK: - Generic Request
 
     private func request<T: Decodable>(
         path: String,
         method: String = "GET",
         body: Encodable? = nil,
-        authenticated: Bool = true
+        authenticated: Bool = true,
+        snakeCaseBody: Bool = true
     ) async throws -> T {
         guard let url = URL(string: "\(baseURL)\(path)") else {
             throw APIError.invalidURL
@@ -42,7 +46,7 @@ actor APIService {
         }
 
         if let body {
-            req.httpBody = try encoder.encode(AnyEncodable(body))
+            req.httpBody = try (snakeCaseBody ? encoder : plainEncoder).encode(AnyEncodable(body))
         }
 
         let (data, response) = try await URLSession.shared.data(for: req)
@@ -188,6 +192,48 @@ actor APIService {
 
     func cancelSubscription() async throws -> MessageResponse {
         try await request(path: "/subscription/cancel", method: "POST")
+    }
+
+    // MARK: - Explorar (modo cliente, sin auth)
+
+    func exploreCategories() async throws -> [CategoryGroup] {
+        try await request(path: "/explore/categories", authenticated: false)
+    }
+
+    func explore(lat: Double, lng: Double, radiusKm: Double,
+                 group: String?, category: String?, query: String?) async throws -> ExploreResponse {
+        var items = [
+            URLQueryItem(name: "lat", value: String(format: "%.6f", lat)),
+            URLQueryItem(name: "lng", value: String(format: "%.6f", lng)),
+            URLQueryItem(name: "radiusKm", value: String(format: "%.1f", radiusKm)),
+            URLQueryItem(name: "limit", value: "100"),
+        ]
+        if let category { items.append(.init(name: "category", value: category)) }
+        else if let group { items.append(.init(name: "group", value: group)) }
+        if let query, !query.isEmpty { items.append(.init(name: "q", value: query)) }
+        var comps = URLComponents()
+        comps.queryItems = items
+        return try await request(path: "/explore?\(comps.percentEncodedQuery ?? "")", authenticated: false)
+    }
+
+    func searchCities(_ q: String) async throws -> [CityResult] {
+        var comps = URLComponents()
+        comps.queryItems = [URLQueryItem(name: "q", value: q)]
+        return try await request(path: "/explore/cities?\(comps.percentEncodedQuery ?? "")", authenticated: false)
+    }
+
+    func business(publicId: String) async throws -> Business {
+        try await request(path: "/explore/business/\(publicId)", authenticated: false)
+    }
+
+    // MARK: - Perfil público del negocio
+
+    func getProfile() async throws -> PublicProfile {
+        try await request(path: "/profile")
+    }
+
+    func updateProfile(_ update: ProfileUpdate) async throws -> PublicProfile {
+        try await request(path: "/profile", method: "PUT", body: update, snakeCaseBody: false)
     }
 
     // MARK: - Offer

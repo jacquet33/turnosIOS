@@ -23,6 +23,13 @@
 		A10014 /* ServicesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10014; };
 		A10015 /* SubscriptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10015; };
 		A10016 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B10016; };
+		A10020 /* ExploreModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10020; };
+		A10021 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10021; };
+		A10022 /* BusinessMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10022; };
+		A10023 /* ExploreViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10023; };
+		A10024 /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10024; };
+		A10025 /* BusinessDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10025; };
+		A10026 /* PublicProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10026; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +51,13 @@
 		B10016 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B10017 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B10099 /* TurnReserved.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TurnReserved.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B10020 /* ExploreModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreModels.swift; sourceTree = "<group>"; };
+		B10021 /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
+		B10022 /* BusinessMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusinessMapView.swift; sourceTree = "<group>"; };
+		B10023 /* ExploreViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreViewModel.swift; sourceTree = "<group>"; };
+		B10024 /* ExploreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreView.swift; sourceTree = "<group>"; };
+		B10025 /* BusinessDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BusinessDetailView.swift; sourceTree = "<group>"; };
+		B10026 /* PublicProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublicProfileView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,6 +105,7 @@
 		D10004 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				B10020 /* ExploreModels.swift */,
 				B10003 /* Models.swift */,
 			);
 			path = Models;
@@ -99,6 +114,7 @@
 		D10005 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				B10021 /* LocationService.swift */,
 				B10004 /* APIService.swift */,
 				B10005 /* AuthViewModel.swift */,
 				B10006 /* KeychainService.swift */,
@@ -121,6 +137,8 @@
 				D10009 /* Booking */,
 				D10010 /* Dashboard */,
 				D10011 /* Subscription */,
+				D10020 /* Explore */,
+				D10021 /* Profile */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -167,6 +185,25 @@
 				B10099 /* TurnReserved.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		D10020 /* Explore */ = {
+			isa = PBXGroup;
+			children = (
+				B10022 /* BusinessMapView.swift */,
+				B10023 /* ExploreViewModel.swift */,
+				B10024 /* ExploreView.swift */,
+				B10025 /* BusinessDetailView.swift */,
+			);
+			path = Explore;
+			sourceTree = "<group>";
+		};
+		D10021 /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+				B10026 /* PublicProfileView.swift */,
+			);
+			path = Profile;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -239,6 +276,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10020 /* ExploreModels.swift in Sources */,
+				A10021 /* LocationService.swift in Sources */,
+				A10022 /* BusinessMapView.swift in Sources */,
+				A10023 /* ExploreViewModel.swift in Sources */,
+				A10024 /* ExploreView.swift in Sources */,
+				A10025 /* BusinessDetailView.swift in Sources */,
+				A10026 /* PublicProfileView.swift in Sources */,
 				A10001 /* TurnReservedApp.swift in Sources */,
 				A10002 /* RootView.swift in Sources */,
 				A10003 /* Models.swift in Sources */,

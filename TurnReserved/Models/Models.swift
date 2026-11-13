@@ -106,7 +106,7 @@ struct BookingPage: Codable {
     struct BookingService: Codable {
         let id: String
         let name: String
-        let minAdvanceHours: Int
+        let minAdvanceHours: Int?
     }
 }
 

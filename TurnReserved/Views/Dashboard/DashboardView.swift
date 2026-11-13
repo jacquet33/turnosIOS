@@ -4,12 +4,14 @@ enum DashboardTab: String, CaseIterable {
     case services = "Servicios"
     case agenda = "Agenda"
     case clients = "Clientes"
+    case profile = "Perfil"
 
     var icon: String {
         switch self {
         case .services: return "briefcase"
         case .agenda: return "calendar"
         case .clients: return "person.2"
+        case .profile: return "mappin.circle"
         }
     }
 }
@@ -17,6 +19,7 @@ enum DashboardTab: String, CaseIterable {
 struct DashboardView: View {
     @EnvironmentObject var auth: AuthViewModel
     @State private var selectedTab: DashboardTab = .services
+    @State private var showExplore = false
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -38,6 +41,15 @@ struct DashboardView: View {
                     }
 
                     Spacer()
+
+                    Button { showExplore = true } label: {
+                        Image(systemName: "map")
+                            .foregroundColor(AppColors.textSecondary)
+                            .frame(width: 40, height: 40)
+                            .background(Color.white.opacity(0.06))
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
+                    .accessibilityLabel("Explorar el mapa")
 
                     Button { auth.logout() } label: {
                         Image(systemName: "rectangle.portrait.and.arrow.right")
@@ -66,6 +78,8 @@ struct DashboardView: View {
                         .tag(DashboardTab.agenda)
                     ClientsView()
                         .tag(DashboardTab.clients)
+                    PublicProfileView()
+                        .tag(DashboardTab.profile)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
 
@@ -97,6 +111,9 @@ struct DashboardView: View {
                         .ignoresSafeArea(edges: .bottom)
                 )
             }
+        }
+        .fullScreenCover(isPresented: $showExplore) {
+            ExploreView(accountLabel: "Mi panel") { showExplore = false }
         }
     }
 }
