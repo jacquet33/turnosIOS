@@ -25,48 +25,39 @@ workflows:
             COMPILER_INDEX_STORE_ENABLE=NO | xcpretty
 
   ios-release:
-    name: iOS Release
+    name: iOS Release (TestFlight)
     max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
       xcode: latest
       groups:
-        - ios_credentials
+        - a   # mismo grupo de variables que mediclick-ios (APP_STORE_CONNECT_* y CERTIFICATE_PRIVATE_KEY)
       vars:
         BUNDLE_ID: "com.turnreserved.app"
+        APP_STORE_APP_ID: "6834563414"
         XCODE_SCHEME: "TurnReserved"
         XCODE_PROJECT: "TurnReserved.xcodeproj"
     scripts:
+      - name: Set build number
+        script: |
+          set -e
+          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APP_ID" 2>/dev/null || echo "")
+          if [[ "$LATEST" =~ ^[0-9]+$ ]]; then NEW=$((LATEST + 1)); else NEW=$(date +%s); fi
+          echo "Build number: $NEW"
+          sed -i '' -E "s/CURRENT_PROJECT_VERSION = [^;]*;/CURRENT_PROJECT_VERSION = $NEW;/g" "$XCODE_PROJECT/project.pbxproj"
+          grep -m2 "CURRENT_PROJECT_VERSION" "$XCODE_PROJECT/project.pbxproj"
       - name: Set up keychain
         script: keychain initialize
       - name: Fetch signing files
-        script: |
-          app-store-connect fetch-signing-files "$BUNDLE_ID" \
-            --type IOS_APP_STORE \
-            --create
-      - name: Set up signing
+        script: app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
+      - name: Add certificates
         script: keychain add-certificates
-      - name: Set up provisioning profiles
+      - name: Set up profiles
         script: xcode-project use-profiles
-      - name: Increment build number
-        script: |
-          # BUILD_NUMBER lo provee Codemagic y crece en cada build → nunca se repite en TestFlight
-          NEW_BUILD=$((100 + BUILD_NUMBER))
-          sed -i '' -E "s/CURRENT_PROJECT_VERSION = [0-9]+;/CURRENT_PROJECT_VERSION = ${NEW_BUILD};/g" "$XCODE_PROJECT/project.pbxproj"
-          echo "Build number: $NEW_BUILD"
       - name: Build IPA
-        script: |
-          xcode-project build-ipa \
-            --project "$XCODE_PROJECT" \
-            --scheme "$XCODE_SCHEME"
+        script: xcode-project build-ipa --project "$XCODE_PROJECT" --scheme "$XCODE_SCHEME"
+      - name: Upload to TestFlight
+        script: app-store-connect publish --path build/ios/ipa/*.ipa
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
-      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
-    publishing:
-      app_store_connect:
-        # Variables del grupo ios_credentials (las mismas que usa fetch-signing-files)
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
-        submit_to_testflight: true
