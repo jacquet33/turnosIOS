@@ -4,7 +4,7 @@ workflows:
     max_build_duration: 30
     instance_type: mac_mini_m2
     environment:
-      xcode: 15.4
+      xcode: latest
     triggering:
       events:
         - push
@@ -21,7 +21,7 @@ workflows:
             -scheme TurnReserved \
             -sdk iphonesimulator \
             -configuration Debug \
-            -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.5' \
+            -destination 'generic/platform=iOS Simulator' \
             COMPILER_INDEX_STORE_ENABLE=NO | xcpretty
 
   ios-release:
@@ -29,7 +29,7 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
-      xcode: 15.4
+      xcode: latest
       groups:
         - ios_credentials
       vars:
@@ -50,8 +50,10 @@ workflows:
         script: xcode-project use-profiles
       - name: Increment build number
         script: |
-          LATEST_BUILD=$(app-store-connect get-latest-testflight-build-number "$BUNDLE_ID" || echo 0)
-          agvtool new-version -all $((LATEST_BUILD + 1))
+          # BUILD_NUMBER lo provee Codemagic y crece en cada build → nunca se repite en TestFlight
+          NEW_BUILD=$((100 + BUILD_NUMBER))
+          sed -i '' -E "s/CURRENT_PROJECT_VERSION = [0-9]+;/CURRENT_PROJECT_VERSION = ${NEW_BUILD};/g" "$XCODE_PROJECT/project.pbxproj"
+          echo "Build number: $NEW_BUILD"
       - name: Build IPA
         script: |
           xcode-project build-ipa \
@@ -63,7 +65,8 @@ workflows:
       - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
     publishing:
       app_store_connect:
-        auth: integration
+        # Variables del grupo ios_credentials (las mismas que usa fetch-signing-files)
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
         submit_to_testflight: true
-        beta_groups:
-          - Internal Testers
